@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <div id="root">
+    <div>{{name}}</div>
+    <div>{{age}}</div>
+  </div>
+  <script>
+    let data = {
+      name: 'yang',
+      age: '18'
+    }
+    //匹配双{}的正则
+    let rMustache = /\{\{(.+?)\}\}/g
+    function compile(templete,data){
+      //1、找到结点 2、找到data 3、挂载 4、渲染
+      let childNodes = templete.childNodes
+
+      for(let i = 0;i<childNodes.length;i++){
+        //元素节点
+        if(childNodes[i].nodeType == '1'){
+          //递归
+          compile(childNodes[i],data)
+        //文本节点
+        }else if(childNodes[i].nodeType == 3){
+          
+          let text = childNodes[i].nodeValue
+          //replace 第一个参数传正则，第二个参数传回调函数 => 匹配到一次执行一次回调 ，返回结果替换正则位置
+          text = text.replace( rMustache , (_,g) => {
+            
+            let key = g.trim()
+            let val = data[key]
+            
+            return val
+          } )
+          
+          childNodes[i].nodeValue = text;
+        }
+      }
+    }
+    let root = document.querySelector("#root")
+    let copyRoot = root.cloneNode(true)
+    compile(copyRoot,data)
+    root.parentNode.replaceChild(copyRoot,root)
+  </script>
+</body>
+</html>
