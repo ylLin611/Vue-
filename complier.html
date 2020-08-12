@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <div id="root">
+    <div>{{name}}</div>
+    <div>{{age}}</div>
+  </div>
+  <script>
+    
+    //匹配双{}的正则
+    let rMustache = /\{\{(.+?)\}\}/g
+
+    //data数据 => 替换{{}}
+    function compile(templete,data){
+      //1、找到结点 2、找到data 3、挂载 4、渲染
+      let childNodes = templete.childNodes
+      for(let i = 0;i<childNodes.length;i++){
+        //元素节点
+        if(childNodes[i].nodeType == '1'){
+          //递归
+          compile(childNodes[i],data)
+        //文本节点
+        }else if(childNodes[i].nodeType == 3){
+          let text = childNodes[i].nodeValue
+          //replace 第一个参数传正则，第二个参数传回调函数 => 匹配到一次执行一次回调 ，返回结果替换正则位置
+          text = text.replace( rMustache , (_,g) => {
+            let key = g.trim()
+            //直接获取data.key不行,肯定是需要深度遍历
+            //let val = data[key]
+            let val = getValueByPath(data,key)
+            return val
+          } )
+          
+          childNodes[i].nodeValue = text;
+        }
+      }
+    }
+    
+    class YlVue{
+      constructor(options){
+        this._templeteDom = document.querySelector(options.el)
+        this._parent = document.querySelector(options.el).parentNode
+        this._data = options.data
+        this.render()
+      }
+      //渲染函数
+      render(){
+        this.compile()
+      }
+      //替换{{}}
+      compile(){
+        let htmlDom = this._templeteDom.cloneNode(true)
+        compile(htmlDom,this._data)
+        this.update(htmlDom)
+      }
+      //更新dom
+      update(htmlDom){
+        this._parent.replaceChild(htmlDom,this._templeteDom)
+      }
+    }
+
+    let app = new YlVue({
+      el: '#root',
+      data: {
+        name: 'yang',
+        age: '18'
+      }
+    })
+
+
+    //***********************************工具************************************
+    // 按照
+    function getValueByPath(obj,path){
+      let pathArr = path.split('.'),
+          prop,
+          res = obj
+      while( prop = pathArr.shift()){
+        res = res[prop]
+      }
+      console.log(res);
+      
+      return res
+    }
+    //***********************************工具************************************
+  </script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <div id="root">
+    <div>{{name}}</div>
+    <div>{{age}}</div>
+  </div>
+  <script>
+    class VNode{
+      // 传入 tag=>节点名（文本：undefined），value=>文本值，data=>属性，type=>类型
+      constructor(tag,value,data,type){
+        this.tag = tag
+        this.value = value
+        this.data = data
+        this.type = type
+        //标签节点的子节点集合
+        this.children = []
+      }
+      //添加到children
+      appendChildren(vnode){
+        this.children.push(vnode)
+      }
+    }
+    function getVNode(template){
+      //获取节点的名称
+      let nodeType = template.nodeType,
+          _vnode = null
+      //当节点是元素节点时
+      if(nodeType === 1){
+         //获取节点的属性
+        let nodeName = template.nodeName, //返回大写名称
+            nodeData = template.attributes, //返回类数组
+            _data = {}
+        let dataLen = nodeData.length
+        //若使用forin循环，会循环出attributes中一些方法
+        for(let i = 0;i<dataLen;i++){
+          _data[nodeData[i].nodeName] = nodeData[i].nodeValue
+        }
+        _vnode = new VNode(nodeName,undefined,_data,nodeType)
+        //获取到所有的子节点
+        let childNodes = template.childNodes
+        for(let i = 0;i<childNodes.length;i++){
+          _vnode.appendChildren( getVNode(childNodes[i]) )
+        }
+      //当文本节点时
+      }else if(nodeType === 3){
+        _vnode = new VNode(undefined,template.nodeValue,undefined,nodeType)
+      }
+
+      return _vnode
+    }
+    let root = document.getElementById("root")
+    let vnode = getVNode(root)
+
+    console.log(vnode);
+    
+    
+  </script>
+</body>
+</html>
