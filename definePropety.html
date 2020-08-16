@@ -6,6 +6,44 @@
   <title>Document</title>
 </head>
 <body>
-  
+  <!-- 数据响应式 -->
+  <script>
+    // 1、写一个definedPropety,对get、set进行监听
+    // 2、赋值需要中间变量，设置方法包裹，使用闭包
+    function defineReactive(obj,key,value){
+      if(Object.prototype.toString.call(value) === '[object Object]'){
+        reactify(value)
+      }
+      Object.defineProperty(obj,key,{
+        get(){
+          console.log('调用get方法')
+          return value
+        },
+        set(newVal){
+          value = newVal
+          console.log('调用set方法')
+        }
+      })  
+    }
+    
+    //让对象中的属性全部响应式，当出现嵌套对象是肯定是需要递归，所以创建方法包裹循环
+    function reactify(obj){
+      for(let i in obj){
+        if(Array.isArray(obj[i])){
+          for(let j of obj[i]){
+            reactify(obj[i])
+          }
+        }else{
+          defineReactive(obj,i,obj[i])
+        }
+      }
+    }
+    var obj = {
+      a: 1,
+      b: [1,2,3,{c:2}],
+      d: {e:3}
+    }
+    reactify(obj)
+  </script>
 </body>
 </html>
